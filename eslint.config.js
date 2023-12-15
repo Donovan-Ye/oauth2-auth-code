@@ -1,15 +1,4 @@
 // @ts-check
-import antfu from '@antfu/eslint-config'
+import donovan from 'eslint-config-donovan'
 
-export default antfu(
-  {
-    ignores: [
-      // eslint ignore globs here
-    ],
-  },
-  {
-    rules: {
-      // overrides
-    },
-  },
-)
+export default donovan()

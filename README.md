@@ -1,4 +1,4 @@
-# pkg-placeholder
+# oauth2-auth-code
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -6,22 +6,11 @@
 [![JSDocs][jsdocs-src]][jsdocs-href]
 [![License][license-src]][license-href]
 
-_description_
-
-> **Note**:
-> Replace `pkg-placeholder`, `_description_` and `antfu` globally to use this template.
-
-## Sponsors
-
-<p align="center">
-  <a href="https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg">
-    <img src='https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg'/>
-  </a>
-</p>
+Encapsulating OAuth2 authorization code grant for front-end projects.
 
 ## License
 
-[MIT](./LICENSE) License © 2023-PRESENT [Anthony Fu](https://github.com/antfu)
+[MIT](./LICENSE) License © 2023-PRESENT [Donovan Ye](https://github.com/Donovan-Ye)
 
 <!-- Badges -->
 
