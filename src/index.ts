@@ -37,7 +37,8 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
     const { status } = response
     if (status === 200) {
       const loginInfo = await response.json()
-      window.location.href = localStorage.getItem('originalUrl') ?? ''
+      window.location.href = localStorage.getItem('originalUrl') ?? window.location.origin
+
       return { status, message: 'Login success', data: loginInfo }
     }
 
