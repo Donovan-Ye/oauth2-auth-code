@@ -65,9 +65,13 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
       jumpingCallback()
       window.location.href = headers.get('url-redirect') ?? ''
     }
-
-    return { status, message: 'Redirecting to Authorization page' }
+    // unified status code to 302, so the end user can easily judge the user's login status.
+    return {
+      status: 302,
+      message: 'Redirecting to Authorization page. If not, please check the header in the response.',
+    }
   }
 
-  return { status, message: 'User is logged in' }
+  // 204 No response
+  return { status: 204, message: 'User is  logged in' }
 }

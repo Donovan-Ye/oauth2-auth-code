@@ -13,6 +13,7 @@ const posts = [
   },
   // ...
 ]
+
 const notLoggedInResponse = new HttpResponse('Not logged in.', {
   status: 401,
   headers: {

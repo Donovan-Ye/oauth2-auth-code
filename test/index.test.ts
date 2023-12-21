@@ -37,7 +37,7 @@ describe('user not logged in', () => {
       loginAPI: LOGIN_API,
     })
 
-    expect(result.status).toEqual(401)
+    expect(result.status).toEqual(302)
     expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
   })
 
@@ -48,7 +48,7 @@ describe('user not logged in', () => {
       loginAPI: LOGIN_API,
     })
 
-    expect(result.status).toEqual(401)
+    expect(result.status).toEqual(302)
     expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
   })
 
@@ -85,7 +85,7 @@ describe('user logged in', () => {
       loginAPI: LOGIN_API,
     })
 
-    expect(result.status).toEqual(200)
+    expect(result.status).toEqual(204)
     expect(result.data).not.toBeNull()
   })
 })
