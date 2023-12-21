@@ -73,5 +73,5 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
   }
 
   // 204 No response
-  return { status: 204, message: 'User is  logged in' }
+  return { status: 204, message: 'User is logged in', data: response.json() }
 }

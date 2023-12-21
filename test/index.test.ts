@@ -86,6 +86,6 @@ describe('user logged in', () => {
     })
 
     expect(result.status).toEqual(204)
-    expect(result.data).not.toBeNull()
+    expect(result.data).not.toBeUndefined()
   })
 })
