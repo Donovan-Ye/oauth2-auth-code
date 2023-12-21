@@ -1,7 +1,7 @@
 {
   "name": "oauth2-code-via-backend",
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "packageManager": "pnpm@8.11.0",
   "description": "Encapsulating the opinioned non-standard flow of OAuth2 authorization code grant for front-end projects, which communicate with the authorization server via a backend API indirectly.",
   "author": "Donovan Ye <xxiaozhiyzj@gmail.com>",
