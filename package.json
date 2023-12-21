@@ -13,7 +13,7 @@
     "url": "git+https://github.com/Donovan-Ye/oauth2-auth-code.git"
   },
   "bugs": "https://github.com/Donovan-Ye/oauth2-auth-code/issues",
-  "keywords": [],
+  "keywords": ["OAuth2", "Authorization Code Grant", "backend API support", "non-standard flow"],
   "sideEffects": false,
   "exports": {
     ".": {
