@@ -12,7 +12,9 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
   const {
     token = '',
     userStateCheckAPI,
+    userStateCheckMethod = 'GET',
     loginAPI,
+    loginMethod = 'POST',
     jumpingCallback = () => {
       // eslint-disable-next-line no-console
       console.log('jumping to Authorization page...')
@@ -24,16 +26,26 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
   const code = urlParams.get('code')
   const state = urlParams.get('state')
   if (code) {
-    const response = await fetch(loginAPI, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    let response
+    if (loginMethod === 'GET') {
+      response = await fetch(`${loginAPI}?${new URLSearchParams({
         code,
-        state,
-      }),
-    })
+        state: state ?? '',
+      })}`)
+    }
+    else {
+      response = await fetch(loginAPI, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          state,
+        }),
+      })
+    }
+
     const { status } = response
     if (status === 200) {
       const loginInfo = await response.json()
@@ -46,7 +58,7 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
   }
 
   const response = await fetch(userStateCheckAPI, {
-    method: 'GET',
+    method: userStateCheckMethod,
     headers: {
       Authorization: token,
     },

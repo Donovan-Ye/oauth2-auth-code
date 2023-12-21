@@ -31,61 +31,80 @@ afterEach(() => {
 })
 
 describe('user not logged in', () => {
-  it('should redirect to authorization server wihout token', async () => {
-    const result = await oauth2FlowViaBackend({
-      userStateCheckAPI: USER_STATE_CHECK_API,
-      loginAPI: LOGIN_API,
+  describe.each([
+    { method: 'GET' },
+    { method: 'POST' },
+  ])('userStateCheckMethod is $method', ({ method }) => {
+    it('should redirect to authorization server wihout token', async () => {
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        userStateCheckMethod: method as 'GET' | 'POST',
+        loginAPI: LOGIN_API,
+      })
+
+      expect(result.status).toEqual(302)
+      expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
     })
 
-    expect(result.status).toEqual(302)
-    expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
+    it('should redirect to authorization server with invalid token', async () => {
+      const result = await oauth2FlowViaBackend({
+        token: 'invalid-token',
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        loginAPI: LOGIN_API,
+      })
+
+      expect(result.status).toEqual(302)
+      expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
+    })
   })
 
-  it('should redirect to authorization server with invalid token', async () => {
-    const result = await oauth2FlowViaBackend({
-      token: 'invalid-token',
-      userStateCheckAPI: USER_STATE_CHECK_API,
-      loginAPI: LOGIN_API,
+  describe.each([
+    { method: 'GET' },
+    { method: 'POST' },
+  ])('loginMethod is $method', ({ method }) => {
+    it('should log in successfully and jump back to original location with valid redirect URL\'s code and state from authorization server', async () => {
+      window.location.href = `${HOME_URL}?code=${VALID_CODE}&state=${RAMDOM_STATE}`
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        loginAPI: LOGIN_API,
+        loginMethod: method as 'GET' | 'POST',
+      })
+
+      expect(result.status).toEqual(200)
+      expect(result.data.token).toEqual(VALID_TOKEN)
+      expect(window.location.href).toEqual(ORIGINAL_URL)
     })
 
-    expect(result.status).toEqual(302)
-    expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
-  })
+    it('should log in failed with invalid redirect URL\'s code and state from authorization server', async () => {
+      const initialUrl = `http://localhost:3000/?code=invalid-code&state=${RAMDOM_STATE}`
+      window.location.href = initialUrl
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        loginAPI: LOGIN_API,
+        loginMethod: method as 'GET' | 'POST',
+      })
 
-  it('should log in successfully and jump back to original location with valid redirect URL\'s code and state from authorization server', async () => {
-    window.location.href = `${HOME_URL}?code=${VALID_CODE}&state=${RAMDOM_STATE}`
-    const result = await oauth2FlowViaBackend({
-      userStateCheckAPI: USER_STATE_CHECK_API,
-      loginAPI: LOGIN_API,
+      expect(result.status).toEqual(401)
+      expect(window.location.href).toEqual(initialUrl)
     })
-
-    expect(result.status).toEqual(200)
-    expect(result.data.token).toEqual(VALID_TOKEN)
-    expect(window.location.href).toEqual(ORIGINAL_URL)
-  })
-
-  it('should log in failed with invalid redirect URL\'s code and state from authorization server', async () => {
-    const initialUrl = `http://localhost:3000/?code=invalid-code&state=${RAMDOM_STATE}`
-    window.location.href = initialUrl
-    const result = await oauth2FlowViaBackend({
-      userStateCheckAPI: USER_STATE_CHECK_API,
-      loginAPI: LOGIN_API,
-    })
-
-    expect(result.status).toEqual(401)
-    expect(window.location.href).toEqual(initialUrl)
   })
 })
 
 describe('user logged in', () => {
-  it('should return data with valid token', async () => {
-    const result = await oauth2FlowViaBackend({
-      token: VALID_TOKEN,
-      userStateCheckAPI: USER_STATE_CHECK_API,
-      loginAPI: LOGIN_API,
-    })
+  describe.each([
+    { method: 'GET' },
+    { method: 'POST' },
+  ])('userStateCheckMethod is $method', ({ method }) => {
+    it('should return data with valid token', async () => {
+      const result = await oauth2FlowViaBackend({
+        token: VALID_TOKEN,
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        userStateCheckMethod: method as 'GET' | 'POST',
+        loginAPI: LOGIN_API,
+      })
 
-    expect(result.status).toEqual(204)
-    expect(result.data).not.toBeUndefined()
+      expect(result.status).toEqual(204)
+      expect(result.data).not.toBeUndefined()
+    })
   })
 })

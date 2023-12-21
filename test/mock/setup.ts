@@ -23,26 +23,42 @@ const notLoggedInResponse = new HttpResponse('Not logged in.', {
 })
 
 export const handlers = [
-  http.get(USER_STATE_CHECK_API, ({ request }) => {
+  ...[http.get, http.post].map(fn => fn(USER_STATE_CHECK_API, ({ request }) => {
     const Authorization = request.headers.get('Authorization')
     if (Authorization !== VALID_TOKEN)
       return notLoggedInResponse
 
     return HttpResponse.json({ message: 'Already logged in, return data', data: posts })
-  }),
+  })),
 
-  http.post(LOGIN_API, async ({ request }) => {
-    const body = await request.json() as { code?: string, state?: string }
-    if (body?.code === VALID_CODE) {
-      return HttpResponse.json({
-        token: VALID_TOKEN,
-        state: body?.state,
-        message: 'Login success',
-      })
-    }
+  ...['get', 'post'].map((method) => {
+    const fn = method === 'get' ? http.get : http.post
 
-    // 401 Unauthorized
-    return HttpResponse.json({ message: 'Login failed' }, { status: 401 })
+    return fn(LOGIN_API, async ({ request }) => {
+      let code: string | null
+      let state: string | null
+      if (method === 'get') {
+        const url = new URL(request.url)
+        code = url.searchParams.get('code')
+        state = url.searchParams.get('state')
+      }
+      else {
+        const body = await request.json() as { code?: string, state?: string }
+        code = body?.code ?? null
+        state = body?.state ?? null
+      }
+
+      if (code === VALID_CODE) {
+        return HttpResponse.json({
+          token: VALID_TOKEN,
+          state,
+          message: 'Login success',
+        })
+      }
+
+      // 401 Unauthorized
+      return HttpResponse.json({ message: 'Login failed' }, { status: 401 })
+    })
   }),
 ]
 
