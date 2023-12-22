@@ -56,6 +56,16 @@ describe('user not logged in', () => {
       expect(result.status).toEqual(302)
       expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
     })
+
+    it('should return 500 and catched error when userStateCheck request failed', async () => {
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: 'invalid-url',
+        userStateCheckMethod: method as 'GET' | 'POST',
+        loginAPI: LOGIN_API,
+      })
+
+      expect(result.status).toEqual(500)
+    })
   })
 
   describe.each([
@@ -76,7 +86,7 @@ describe('user not logged in', () => {
     })
 
     it('should log in failed with invalid redirect URL\'s code and state from authorization server', async () => {
-      const initialUrl = `http://localhost:3000/?code=invalid-code&state=${RAMDOM_STATE}`
+      const initialUrl = `${HOME_URL}/?code=invalid-code&state=${RAMDOM_STATE}`
       window.location.href = initialUrl
       const result = await oauth2FlowViaBackend({
         userStateCheckAPI: USER_STATE_CHECK_API,
@@ -86,6 +96,17 @@ describe('user not logged in', () => {
 
       expect(result.status).toEqual(401)
       expect(window.location.href).toEqual(initialUrl)
+    })
+
+    it('should return 500 and catched error when login request failed', async () => {
+      window.location.href = `${HOME_URL}/?code=${VALID_CODE}&state=${RAMDOM_STATE}`
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        loginAPI: 'invalid-url',
+        loginMethod: method as 'GET' | 'POST',
+      })
+
+      expect(result.status).toEqual(500)
     })
   })
 })
