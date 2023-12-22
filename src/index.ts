@@ -84,7 +84,7 @@ async function checkUserState(
     }
 
     // 204 No response
-    return { status: 204, message: 'User is logged in', data: response.json() }
+    return { status: 204, message: 'User is logged in', data: await response.json() }
   }
   catch (err) {
     // 500 Internal Server Error
