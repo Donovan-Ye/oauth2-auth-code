@@ -36,10 +36,10 @@ async function loginWithCode(
       const loginInfo = await response.json()
       window.location.href = localStorage.getItem('originalUrl') ?? window.location.origin
 
-      return { status, message: 'Login success', data: loginInfo }
+      return { status: 200, message: 'Login success', data: loginInfo }
     }
 
-    return { status, message: 'Login failed' }
+    return { status: 401, message: 'Login failed' }
   }
   catch (error) {
     return { status: 500, message: 'Something went wrong when logging in', data: error }
