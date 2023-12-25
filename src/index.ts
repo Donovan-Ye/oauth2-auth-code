@@ -117,7 +117,7 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
   const code = urlParams.get('code')
   const state = urlParams.get('state')
   if (code)
-    return loginWithCode(loginAPI, code, state, loginMethod)
+    return await loginWithCode(loginAPI, code, state, loginMethod)
 
-  return checkUserState(userStateCheckAPI, userStateCheckMethod, token, jumpingCallback)
+  return await checkUserState(userStateCheckAPI, userStateCheckMethod, token, jumpingCallback)
 }
