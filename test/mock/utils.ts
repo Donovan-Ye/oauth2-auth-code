@@ -1,4 +1,5 @@
 export const DOMAIN = 'https://rest-test.com'
+export const USER_STATE_CHECK_API_WITH_EMPTY_REDIRECT = `${DOMAIN}/check-point-with-empty-redirect`
 export const USER_STATE_CHECK_API = `${DOMAIN}/check-point`
 export const LOGIN_API = `${DOMAIN}/login`
 // Without parameters like response_type in the URL, cause the logic in Authorization Server is not tested here.

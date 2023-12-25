@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll } from 'vitest'
 import { setupServer } from 'msw/node'
 import { HttpResponse, http } from 'msw'
-import { LOGIN_API, USER_STATE_CHECK_API, VALID_CODE, VALID_TOKEN } from './utils'
+import { LOGIN_API, USER_STATE_CHECK_API, USER_STATE_CHECK_API_WITH_EMPTY_REDIRECT, VALID_CODE, VALID_TOKEN } from './utils'
 
 const posts = [
   {
@@ -13,23 +13,7 @@ const posts = [
   // ...
 ]
 
-const notLoggedInResponse = new HttpResponse('Not logged in.', {
-  status: 401,
-  headers: {
-    'Content-Type': 'application/json',
-    'url-redirect': 'https://authorization-server.com',
-  },
-})
-
 export const handlers = [
-  ...[http.get, http.post].map(fn => fn(USER_STATE_CHECK_API, ({ request }) => {
-    const Authorization = request.headers.get('Authorization')
-    if (Authorization !== VALID_TOKEN)
-      return notLoggedInResponse
-
-    return HttpResponse.json({ message: 'Already logged in, return data', data: posts })
-  })),
-
   ...['get', 'post'].map((method) => {
     const fn = method === 'get' ? http.get : http.post
 
@@ -60,6 +44,26 @@ export const handlers = [
     })
   }),
 ]
+
+function getNotLoggedInResponse(api: string): HttpResponse {
+  return new HttpResponse('Not logged in.', {
+    status: 401,
+    headers: {
+      'Content-Type': 'application/json',
+      'url-redirect': api === USER_STATE_CHECK_API ? 'https://authorization-server.com' : '',
+    },
+  })
+}
+
+for (const api of [USER_STATE_CHECK_API, USER_STATE_CHECK_API_WITH_EMPTY_REDIRECT]) {
+  handlers.push(...[http.get, http.post].map(fn => fn(api, ({ request }) => {
+    const Authorization = request.headers.get('Authorization')
+    if (Authorization !== VALID_TOKEN)
+      return getNotLoggedInResponse(api)
+
+    return HttpResponse.json({ message: 'Already logged in, return data', data: posts })
+  })))
+}
 
 const server = setupServer(...handlers)
 

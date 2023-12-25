@@ -12,6 +12,7 @@ import {
   LOGIN_API,
   RAMDOM_STATE,
   USER_STATE_CHECK_API,
+  USER_STATE_CHECK_API_WITH_EMPTY_REDIRECT,
   VALID_CODE,
   VALID_TOKEN,
 } from './mock/utils'
@@ -85,6 +86,16 @@ describe('user not logged in', () => {
       expect(result.status).toEqual(302)
       expect(mockJumpingCallback).toHaveBeenCalledOnce()
       expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
+    })
+
+    it('should get 500 when userStateCheckAPI\'s response dont not have valid url-redirect header[special implement for my project]', async () => {
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: USER_STATE_CHECK_API_WITH_EMPTY_REDIRECT,
+        userStateCheckMethod: method as 'GET' | 'POST',
+        loginAPI: LOGIN_API,
+      })
+
+      expect(result.status).toEqual(500)
     })
   })
 

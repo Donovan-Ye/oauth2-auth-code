@@ -74,6 +74,10 @@ async function checkUserState(
       delCookie()
       localStorage.clear()
       localStorage.setItem('originalUrl', window.location.href)
+      const urlRedirect = headers.get('url-redirect') ?? ''
+      if (!urlRedirect.length)
+        throw new Error('The \'url-redirect\' header is empty, please check the backend implementation.')
+
       if (status === 200 || status === 401) {
         jumpingCallback()
         window.location.href = headers.get('url-redirect') ?? ''
