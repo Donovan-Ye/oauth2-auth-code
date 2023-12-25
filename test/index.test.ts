@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import oauth2FlowViaBackend from '../src'
 import {
   AUTHORIZATION_SERVER,
@@ -66,6 +73,19 @@ describe('user not logged in', () => {
 
       expect(result.status).toEqual(500)
     })
+
+    it('should call jumpingCallback when user is redirected to authorization server\'s login page', async () => {
+      const mockJumpingCallback = vi.fn()
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        jumpingCallback: mockJumpingCallback,
+        loginAPI: LOGIN_API,
+      })
+
+      expect(result.status).toEqual(302)
+      expect(mockJumpingCallback).toHaveBeenCalledOnce()
+      expect(window.location.href).toEqual(AUTHORIZATION_SERVER)
+    })
   })
 
   describe.each([
@@ -83,6 +103,20 @@ describe('user not logged in', () => {
       expect(result.status).toEqual(200)
       expect(result.data.token).toEqual(VALID_TOKEN)
       expect(window.location.href).toEqual(ORIGINAL_URL)
+    })
+
+    it('should call loginSuccessCallback when user is logged in successfully', async () => {
+      const mockLoginSuccessCallback = vi.fn()
+      window.location.href = `${HOME_URL}?code=${VALID_CODE}&state=${RAMDOM_STATE}`
+      const result = await oauth2FlowViaBackend({
+        userStateCheckAPI: USER_STATE_CHECK_API,
+        loginAPI: LOGIN_API,
+        loginMethod: method as 'GET' | 'POST',
+        loginSuccessCallback: mockLoginSuccessCallback,
+      })
+
+      expect(result.status).toEqual(200)
+      expect(mockLoginSuccessCallback).toHaveBeenCalledOnce()
     })
 
     it('should log in failed with invalid redirect URL\'s code and state from authorization server', async () => {

@@ -9,6 +9,7 @@ async function loginWithCode(
   code: string,
   state: string | null,
   loginMethod: 'GET' | 'POST',
+  loginSuccessCallback: () => void,
 ) {
   try {
     let response
@@ -34,6 +35,7 @@ async function loginWithCode(
     const { status } = response
     if (status === 200) {
       const loginInfo = await response.json()
+      loginSuccessCallback()
       window.location.href = localStorage.getItem('originalUrl') ?? window.location.origin
 
       return { status: 200, message: 'Login success', data: loginInfo }
@@ -110,6 +112,10 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
       // eslint-disable-next-line no-console
       console.log('jumping to Authorization page...')
     },
+    loginSuccessCallback = () => {
+      // eslint-disable-next-line no-console
+      console.log('login success')
+    },
   } = config
 
   const queryString = window.location.search
@@ -117,7 +123,7 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
   const code = urlParams.get('code')
   const state = urlParams.get('state')
   if (code)
-    return await loginWithCode(loginAPI, code, state, loginMethod)
+    return await loginWithCode(loginAPI, code, state, loginMethod, loginSuccessCallback)
 
   return await checkUserState(userStateCheckAPI, userStateCheckMethod, token, jumpingCallback)
 }
