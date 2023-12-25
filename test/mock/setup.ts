@@ -1,6 +1,5 @@
-import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
+import { afterAll, afterEach, beforeAll } from 'vitest'
 import { setupServer } from 'msw/node'
-import type { DefaultBodyType } from 'msw'
 import { HttpResponse, http } from 'msw'
 import { LOGIN_API, USER_STATE_CHECK_API, VALID_CODE, VALID_TOKEN } from './utils'
 
