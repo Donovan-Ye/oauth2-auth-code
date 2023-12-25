@@ -9,7 +9,7 @@ async function loginWithCode(
   code: string,
   state: string | null,
   loginMethod: 'GET' | 'POST',
-  loginSuccessCallback: () => void,
+  loginSuccessCallback: (...args: any[]) => void,
 ) {
   try {
     let response
@@ -35,7 +35,7 @@ async function loginWithCode(
     const { status } = response
     if (status === 200) {
       const loginInfo = await response.json()
-      loginSuccessCallback()
+      loginSuccessCallback(loginInfo)
       window.location.href = localStorage.getItem('originalUrl') ?? window.location.origin
 
       return { status: 200, message: 'Login success', data: loginInfo }

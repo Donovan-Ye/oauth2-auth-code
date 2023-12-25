@@ -38,5 +38,5 @@ export interface ConfigOptions {
    * The callback function that will be called when the user is logged in successfully.
    * The default function is to log the message to the console.
    */
-  loginSuccessCallback?: () => void
+  loginSuccessCallback?: (...args: any[]) => void
 }
