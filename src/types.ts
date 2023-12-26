@@ -12,7 +12,7 @@ export interface ConfigOptions {
   userStateCheckAPI: string
 
   /**
-   * The method used to check the user state.
+   * The method used to check the user state. The default method is GET.
    */
   userStateCheckMethod?: 'GET' | 'POST'
 
@@ -24,7 +24,7 @@ export interface ConfigOptions {
   loginAPI: string
 
   /**
-   * The method used to log the user in.
+   * The method used to log the user in. The default method is POST.
    */
   loginMethod?: 'GET' | 'POST'
 
