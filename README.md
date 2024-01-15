@@ -1,6 +1,6 @@
 # oauth2-code-via-backend
 
-> 以下是中文文档，英文文档请参考 [README-EN.md](./README-EN.md)
+> Below is Chinese README, please refer to [README-EN.md](./README-EN.md) for English version.
 
 该项目封装了前端项目中，通过后端 API 间接与授权服务器通信的 **非标准** OAuth2 授权码授权流程。
 
