@@ -75,12 +75,16 @@ const result = await oauth2CodeViaBackend({
   userStateCheckAPI: `${apiPrefix}authority/getMenus`,
   // The method used to check the user state. The default method is GET.
   userStateCheckMethod: 'POST',
+  // The extra headers used to check the user state.
+  userStateCheckHeaders: {},
   // The API used to log the user in with the authorization code.
   // Which will return the access token.
   // The method used to log the user in is default to POST.
   loginAPI: `${apiPrefix}login`,
   // The method used to log the user in. The default method is POST.
   loginMethod: 'GET',
+  // The extra headers used to log the user in.
+  loginHeaders: {},
   // The callback function that will be called when the user is redirected to the authorization page.
   // The default function is to log the message to the console.
   jumpingCallback: () => {
