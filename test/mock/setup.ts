@@ -1,7 +1,13 @@
 import { afterAll, afterEach, beforeAll } from 'vitest'
 import { setupServer } from 'msw/node'
 import { HttpResponse, http } from 'msw'
-import { LOGIN_API, USER_STATE_CHECK_API, USER_STATE_CHECK_API_WITH_EMPTY_REDIRECT, VALID_CODE, VALID_TOKEN } from './utils'
+import {
+  LOGIN_API,
+  USER_STATE_CHECK_API,
+  USER_STATE_CHECK_API_WITH_EMPTY_REDIRECT,
+  VALID_CODE,
+  VALID_TOKEN,
+} from './utils'
 
 const posts = [
   {

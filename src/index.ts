@@ -1,29 +1,40 @@
-import type { ConfigOptions } from './types'
+import type { ConfigOptions, LoginOptions, checkUserStateOptions } from './types'
 import { delCookie } from './utils'
 
 /**
  * Log the user in with the authorization code.
  */
 async function loginWithCode(
-  loginAPI: string,
-  code: string,
-  state: string | null,
-  loginMethod: 'GET' | 'POST',
-  loginSuccessCallback: (...args: any[]) => void,
+  options: LoginOptions,
 ) {
+  const {
+    loginAPI,
+    code,
+    state,
+    loginMethod,
+    loginHeaders,
+    loginSuccessCallback = () => {
+      // eslint-disable-next-line no-console
+      console.log('login success')
+    },
+  } = options
+
   try {
     let response
     if (loginMethod === 'GET') {
       response = await fetch(`${loginAPI}?${new URLSearchParams({
         code,
         state: state ?? '',
-      })}`)
+      })}`, {
+        headers: loginHeaders,
+      })
     }
     else {
       response = await fetch(loginAPI, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...loginHeaders,
         },
         body: JSON.stringify({
           code,
@@ -53,16 +64,24 @@ async function loginWithCode(
  * If not, the API will redirect the user to the authorization page.
  */
 async function checkUserState(
-  userStateCheckAPI: string,
-  userStateCheckMethod: 'GET' | 'POST',
-  token: string,
-  jumpingCallback: () => void,
+  options: checkUserStateOptions,
 ) {
+  const {
+    userStateCheckAPI,
+    userStateCheckMethod,
+    userStateCheckHeaders,
+    token,
+    jumpingCallback = () => {
+      // eslint-disable-next-line no-console
+      console.log('jumping to Authorization page...')
+    },
+  } = options
   try {
     const response = await fetch(userStateCheckAPI, {
       method: userStateCheckMethod,
       headers: {
         Authorization: token,
+        ...userStateCheckHeaders,
       },
     })
     const { status, headers } = response
@@ -110,8 +129,10 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
     token = '',
     userStateCheckAPI,
     userStateCheckMethod = 'GET',
+    userStateCheckHeaders = {},
     loginAPI,
     loginMethod = 'POST',
+    loginHeaders = {},
     jumpingCallback = () => {
       // eslint-disable-next-line no-console
       console.log('jumping to Authorization page...')
@@ -126,8 +147,22 @@ export default async function oauth2CodeViaBackend(config: ConfigOptions): Promi
   const urlParams = new URLSearchParams(queryString)
   const code = urlParams.get('code')
   const state = urlParams.get('state')
-  if (code)
-    return await loginWithCode(loginAPI, code, state, loginMethod, loginSuccessCallback)
+  if (code) {
+    return await loginWithCode({
+      loginAPI,
+      code,
+      state,
+      loginMethod,
+      loginHeaders,
+      loginSuccessCallback,
+    })
+  }
 
-  return await checkUserState(userStateCheckAPI, userStateCheckMethod, token, jumpingCallback)
+  return await checkUserState({
+    userStateCheckAPI,
+    userStateCheckMethod,
+    userStateCheckHeaders,
+    token,
+    jumpingCallback,
+  })
 }
