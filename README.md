@@ -1,23 +1,20 @@
 # oauth2-code-via-backend
 
-<!-- [![npm version][npm-version-src]][npm-version-href]
-[![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![bundle][bundle-src]][bundle-href]
-[![JSDocs][jsdocs-src]][jsdocs-href]
-[![License][license-src]][license-href] -->
+> 以下是中文文档，英文文档请参考 [README-EN.md](./README-EN.md)
 
-Encapsulating the **opinioned non-standard** flow of OAuth2 authorization code grant for front-end projects, which communicate with the authorization server indirectly via backend APIs.
+该项目封装了前端项目中，通过后端 API 间接与授权服务器通信的 **非标准** OAuth2 授权码授权流程。
 
-## What is the OAuth 2.0 Authorization Code Grant?
+## 什么是 OAUTH 2.0 授权码授权流程(Authorization Code Grant)
 
 <img src="https://images.ctfassets.net/cdy7uua7fh8z/2nbNztohyR7uMcZmnUt0VU/2c017d2a2a2cdd80f097554d33ff72dd/auth-sequence-auth-code.png"/>
 
-More details please refer to [okta Developer](https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type).
+更多细节请参考 [okta Developer](https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type).
 
-## Non-standard flow
+## 非标准流程
 
-As we can see from the above article, the authorization code grant flow is a type of Oauth2 protocol. The standard flow is that the client (browser) communicates with the authorization server directly. The simple steps are as follows:
-1. The client (browser) redirects the user to the authorization server: 
+从上面的文章中我们可以看到，授权码授权流程是 OAuth2 协议的一种类型。标准流程是客户端（浏览器）直接与授权服务器通信。简单的步骤如下：
+
+1. 客户端（浏览器）将用户重定向到授权服务器：
     ```
     https://authorization-server.com/auth
       ?response_type=code
@@ -26,120 +23,99 @@ As we can see from the above article, the authorization code grant flow is a typ
       &scope=create+delete
       &state=xcoiv98y2kd22vusuye3kch
     ```
-2. The user authenticates and authorizes the client.
-3. The authorization server redirects the user back to the client with an authorization code:
+2. 用户进行身份验证和授权。
+3. 授权服务器将用户重定向回客户端，并附带授权码：
     ```
     https://example-app.com/redirect
       ?code=g0ZGZmNjVmOWIjNTk2NTk2YTJkM
       &state=xcoiv98y2kd22vusuye3kch
     ```
-4. The client requests an access token from the authorization server's token endpoint by passing the authorization code received in the previous step, also with other parameters like client_id, client_secret, redirect_uri, etc. Refer to above article for more details.
+4. 客户端通过在上一步中收到的授权码，以及其他参数（如 client_id、client_secret、redirect_uri 等）向授权服务器请求访问令牌，也就是access token。更多细节请参考上面的文章。
 
-But in this case, the client communicates with the authorization server indirectly via backend APIs. The steps are as follows:
-1. The client (browser) check the login state via a backend API, if the user is not logged in, the backend API will redirect the user to the authorization server automatically via 302 redirect(or via spesific field in header, which is url-redirect in this project.).
-2. The user authenticates and authorizes the client (same as step 2 in standard flow).
-3. The authorization server redirects the user back to the client with an authorization code (same as step 3 in standard flow).
-4. The client (browser) sends the authorization code to the login backend API, and the backend API requests an access token from the authorization server's token endpoint by passing the authorization code received in the previous step.
+但是在我们的项目中，是间接与授权服务器通信的。步骤如下：
 
-## Why do we need this?
+1. 客户端（浏览器）通过后端 API 检查登录状态，如果用户未登录，后端 API 将自动通过 302 重定向将用户重定向到授权服务器（或者通过 header 中的特定字段来控制，在我们的项目中使用url-redirect）。
+2. 用户进行身份验证和授权（与标准流程中的第 2 步相同）。
+3. 授权服务器将用户重定向回客户端，并附带授权码（与标准流程中的第 3 步相同）。
+4. 客户端（浏览器）将授权码发送给后端。后端再将授权码，以及其他参数（如 client_id、client_secret、redirect_uri 等）发送给授权服务器，去请求访问令牌。
 
-This is a special use case in my work. The redirect logic is ecapsulated in the backend API, and the client (browser) just need to send the authorization code to the backend API. The backend API will handle the rest of the flow. 
+## 为什么开发这个项目？ 
 
-**So, this project is pretty much like an opinioned version of Oauth2 authorization code grant flow, which is suitable for my use case. If you have the same use case, you can use this project directly.**
+这是我们项目里一个通用的登录授权逻辑。重定向逻辑封装在后端 API 中，客户端（浏览器）只需要将授权码发送给后端，后端来处理后续逻辑。**因此，这个项目是Oauth2授权码流程的一个变种，适用于我们的项目。如果你有相同的需求的话，可以直接使用这个项目。**
 
+## 使用方法
 
-## Usage
-
-### Install
+### 安装
 
 ```bash
 npm install oauth2-code-via-backend
 ```
 
-### Usage
+### 使用
 
 ```js
 import { OAuth2CodeViaBackend } from 'oauth2-code-via-backend'
 
-// Using env variables to distinguish between development and production environment
+// 使用 env 变量来区分开发环境和生产环境
 const apiPrefix = import.meta.env.MODE === 'development'
   ? import.meta.env.VITE_DEV_URL
   : import.meta.env.VITE_PROD_URL
 
 const result = await oauth2CodeViaBackend({
-  // The token stored locally in the client. If the token is valid, the login flow will be skipped.
+  // 存储在客户端本地的令牌。如果令牌有效，则跳过登录流程。
   token: localStorage.getItem('token'),
-  // The API used to check whether the user is logged in or not.
-  // If not, the API will redirect the user to the authorization page.
-  // The method used to check the user state is default to GET.
+  // 用于检查用户是否已登录的 API。
+  // 如果没有登录，API 将自动通过 302 或者自定义header逻辑 将用户重定向到授权页面。
+  // 检查用户状态的方法默认为 GET。
   userStateCheckAPI: `${apiPrefix}authority/getMenus`,
-  // The method used to check the user state. The default method is GET.
+  // 用于检查用户状态的方法。默认方法为 GET。
   userStateCheckMethod: 'POST',
-  // The extra headers used to check the user state.
+  // 用于检查用户状态的额外 header。
   userStateCheckHeaders: {},
-  // The API used to log the user in with the authorization code.
-  // Which will return the access token.
-  // The method used to log the user in is default to POST.
+  // 用于使用授权码登录的 API。
+  // 将返回访问令牌。
   loginAPI: `${apiPrefix}login`,
-  // The method used to log the user in. The default method is POST.
+  // 用于登录的方法。默认方法为 POST。
   loginMethod: 'GET',
-  // The extra headers used to log the user in.
+  // 用于登录的额外 header。
   loginHeaders: {},
-  // The callback function that will be called when the user is redirected to the authorization page.
-  // The default function is to log the message to the console.
+  // 当用户被重定向到授权页面时将调用的回调函数。
+  // 默认函数是将消息记录到控制台。
   jumpingCallback: () => {
     message.warning('You are being redirected to the authorization page..')
   },
-  // The callback function that will be called when the user is logged in successfully.
-  // The default function is to log the message to the console.
+  // 当用户登录成功时将调用的回调函数。
+  // 默认函数是将消息记录到控制台。
   loginSuccessCallback: async (data) => {
-    // data is the response data from the loginAPI, which contains the access token.
+    // data 是 loginAPI 的响应数据，其中包含访问令牌。
     localStorage.setItem('token', data?.token)
   },
 })
 
 /**
  * result: {
- * status: number // the oauth2 flow's status code, refer to http response code
+ * status: number // oauth2 流程的状态码，参考 http 响应码
  * message: string
- * data?: any // the data returned, including API's response data, catched error.
+ * data?: any // 返回的数据，包括 API 的响应数据，捕获的错误等。
  * }
  */
 switch (result.status) {
   case 200:
-    // 200: login successfully, the flow is finished
+    // 200: 登录成功，流程结束
     break
   case 204:
-    // 204: user is already logged in, return the checkAPI's respnse data directly within the result
+    // 204: 用户已登录，直接返回 userStateCheckAPI 的响应数据
     break
   case 302:
-    // 302: user is not logged in, the backend API has redirected the user to the authorization server
+    // 302: 用户未登录，loginAPI 已将用户重定向到授权服务器
     break
   case 401:
-    // 401: unauthorized, there is something wrong with the login backend API
+    // 401: 未授权，用户登录失败，loginAPI 的响应数据中包含错误信息
     break
   case 500:
-    // 500: internal server error, there is something wrong with the check-user backend API
+    // 500: 内部服务器错误，loginAPI 或者 userStateCheckAPI 出现错误
     break
   default:
     break
 }
 ```
-
-
-## License
-
-[MIT](./LICENSE) License © 2023-PRESENT [Donovan Ye](https://github.com/Donovan-Ye)
-
-<!-- Badges -->
-
-[npm-version-src]: https://img.shields.io/npm/v/pkg-placeholder?style=flat&colorA=080f12&colorB=1fa669
-[npm-version-href]: https://npmjs.com/package/pkg-placeholder
-[npm-downloads-src]: https://img.shields.io/npm/dm/pkg-placeholder?style=flat&colorA=080f12&colorB=1fa669
-[npm-downloads-href]: https://npmjs.com/package/pkg-placeholder
-[bundle-src]: https://img.shields.io/bundlephobia/minzip/pkg-placeholder?style=flat&colorA=080f12&colorB=1fa669&label=minzip
-[bundle-href]: https://bundlephobia.com/result?p=pkg-placeholder
-[license-src]: https://img.shields.io/github/license/antfu/pkg-placeholder.svg?style=flat&colorA=080f12&colorB=1fa669
-[license-href]: https://github.com/antfu/pkg-placeholder/blob/main/LICENSE
-[jsdocs-src]: https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=080f12&colorB=1fa669
-[jsdocs-href]: https://www.jsdocs.io/package/pkg-placeholder
